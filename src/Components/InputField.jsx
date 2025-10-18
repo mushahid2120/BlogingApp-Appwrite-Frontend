@@ -1,29 +1,25 @@
-import React from "react";
+import React, { forwardRef, useId } from "react";
 import { useDispatch } from "react-redux";
 import { clearError } from "../store/slice/authSlice";
 
-function InputField({ label, placeholder, id, type,value,name,setUser }) {
+const InputField=forwardRef(( {...props},ref )=>{
   const dispatch=useDispatch()
+  const Id=useId()
   return (
     <div className="my-4">
-      <label htmlFor={id} className="block text-lg ">
-        {label}
+      <label htmlFor={Id} className="block text-lg "> {props.label}
       </label>
       <input
-        type={type}
-        placeholder={placeholder}
+        type={props.type}
+        placeholder={props.placeholder}
         required
-        htmlFor={id}
-        className="border-solid border-2 border-pink-200 rounded-md text-lg outline-none px-2 py-1 w-full"
-        value={value}
-        name={name}
-        onChange={(e) => {
-          setUser((prevState) => ({ ...prevState, [name]: e.target.value }));
-          dispatch(clearError())
-        }}
+        htmlFor={Id}
+        className="border-solid border-2 border-pink-200 rounded-md text-lg outline-none px-2 py-1 w-full bg-white"
+        {...props}
+        ref={ref}
       />
     </div>
   );
-}
+})
 
 export default InputField;

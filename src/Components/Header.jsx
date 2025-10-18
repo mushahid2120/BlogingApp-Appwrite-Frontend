@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import reactLogo from "../assets/react.svg";
 import { useDispatch, useSelector } from "react-redux";
 import {  isLogin, setIsLogin } from "../store/slice/authSlice";
@@ -9,6 +9,7 @@ import userAuth from "../appwrite/auth";
 function Header() {
   const islogin = useSelector(isLogin);
   const dispatch=useDispatch()
+  const navigate=useNavigate()
 
   useEffect(()=>{
     const checking=async()=>{
@@ -54,6 +55,7 @@ function Header() {
               onClick={async()=>{
                 await userAuth.UserLogout()
                 dispatch(setIsLogin(false))
+                navigate('/')
               }}
             >
               Logout
