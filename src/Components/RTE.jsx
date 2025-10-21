@@ -1,8 +1,7 @@
 import { Editor } from "@tinymce/tinymce-react";
 import { Controller } from "react-hook-form";
 
-function RTE({control}) {
-
+function RTE({control,defaultValue}) {
   return (
     <Controller
       name="content"
@@ -11,7 +10,7 @@ function RTE({control}) {
         return (
           <Editor
             apiKey="jk7nuabdva6wb6k4s72n0ur9is8fqjydgy9yioqudu11pb6h"
-            initialValue=""
+            initialValue={defaultValue}
             init={{
               plugins: [
                 "image",

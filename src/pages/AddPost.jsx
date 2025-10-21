@@ -4,28 +4,56 @@ import RTE from "../Components/RTE";
 import { useForm } from "react-hook-form";
 import databaseService from "../appwrite/appwriteServie";
 import ImageView from "../Components/ImageView";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import imageCompression from "browser-image-compression";
 
 function AddPost() {
-  const { control, register, handleSubmit, watch } = useForm();
-  const navigate=useNavigate()
+  const formData = useLocation().state;
+  const { control, register, handleSubmit, watch, getValues } = useForm({
+    defaultValues: {
+      title: formData?.title || "",
+      content: formData?.content || "",
+      file: "",
+    },
+  });
+  const navigate = useNavigate();
+
 
   const addToDatabase = async (data) => {
-    console.log(data);
-    try {
-      const result = await databaseService.addData(data);
-      navigate('/'+data.title, { state: {...data,imageUrl: URL.createObjectURL(watch("file")[0])} })
-      console.log(result);
-    } catch (error) {
-      console.log(error);
+    const compressedFile = await imageCompression(data.file[0], {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 1280,
+    });
+    const finalCompressedFile = new File([compressedFile], data.file[0].name, {
+      type: compressedFile.type,
+    });
+    const imageref = await databaseService.uploadImage(finalCompressedFile);
+    if (formData) {
+      const result = await databaseService.updateBlog(formData.id, {
+        ...data,
+        file: imageref.$id,
+      });
+      navigate(`/+${data.title}?blog=${result.$id}`, {
+        state: {
+          title: result.title,
+          file: result.file,
+          content: result.content,
+        },
+      });
+    } else {
+      const result = await databaseService.addData({
+        ...data,
+        file: imageref.$id,
+      });
+      navigate(`/+${data.title}?blog=${result.$id}`, {
+        state: {
+          title: result.title,
+          file: result.file,
+          content: result.content,
+        },
+      });
     }
   };
-
-  console.log(watch("file")?.length);
-
-  if (watch("file") !== undefined && watch("file").length !== 0) {
-    console.dir(URL.createObjectURL(watch("file")[0]));
-  }
 
   return (
     <main className="min-h-[78vh] my-4 flex justify-center  ">
@@ -40,7 +68,7 @@ function AddPost() {
             type="text"
             {...register("title")}
           />
-          <RTE control={control} />
+          <RTE control={control} defaultValue={getValues("content")} />
         </div>
         <div className="flex-grow-2">
           <InputField
@@ -49,21 +77,25 @@ function AddPost() {
             type="file"
             {...register("file")}
           />
-          {
-            // if(watch('file')!==undefined && watch('file').length!==0){
-            //   console.dir(URL.createObjectURL(watch('file')[0]))
-            //   }
-
-            watch("file") !== undefined ? (
-              watch("file").length !== 0 ? (
-                <ImageView src={URL.createObjectURL(watch("file")[0])} height="max-h-40" />
+          {watch("file") !== undefined ? (
+            watch("file").length !== 0 ? (
+              formData === null ? (
+                <ImageView
+                  src={URL.createObjectURL(watch("file")[0])}
+                  height="max-h-40"
+                />
               ) : (
-                ""
+                <ImageView
+                  src={databaseService.getFile(formData.file)}
+                  height="max-h-40"
+                />
               )
             ) : (
               ""
             )
-          }
+          ) : (
+            ""
+          )}
           <select
             className="border-solid border-2 border-pink-200 rounded-md text-lg outline-none px-2 py-1 w-full bg-white"
             {...register("access")}

@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {  isLogin, setIsLogin } from "../store/slice/authSlice";
 import { useEffect } from "react";
 import userAuth from "../appwrite/auth";
-// import userAuth from "../appwrite/auth";
 
 function Header() {
   const islogin = useSelector(isLogin);
